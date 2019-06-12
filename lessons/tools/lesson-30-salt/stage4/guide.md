@@ -1,58 +1,66 @@
 ## Network Automation with Salt
 
-**Contributed by: [Sudhishna Sendhilvelan](https://github.com/Sudhishna) and [Vinayak Iyer](https://github.com/vinayak-skywalker)**
+**Contributed by: [Ashwini Ravindra](https://github.com/ashwiniravindra) and [Shweta Kondvilkar](https://github.com/skondvilkar)**
 
 ---
 
-## Part 2 - Junos Proxy Minions
+## Part 4 - Junos Configuration Management with Salt
 
-To manage a Junos device, we do not run an on box Salt Minion. Instead we make use of a [Proxy Minion](https://docs.saltstack.com/en/latest/topics/proxyminion/index.html). A Proxy minion can be run on the Salt Master or the Salt Minion.
+Now let's apply some Junos device configurations!
 
-Now let's configure the Proxy Minions. To do this, we must define the IP address, username, password and the proxy type which in our case is `junos`. All of these details are part of the vqfx1.sls. An SLS file is a Salt State file which can be in various formats. The simplest case is YAML, or it can be YAML+Jinja in case we require a templating language.
+To configure general infrastructure services such as DNS and NTP, we will take advantage of configuration templating provided by Salt. The template will isolate the variable data like IP addresses, VLAN numbers, etc. from the network device feature configuration. With Salt, the variable data is naturally stored in the pillar system.
+
+To do this, an SLS file is created in the pillar root directory containing the list of NTP and DNS servers.
+
 ```
-cat /srv/pillar/vqfx1.sls
-```
+cat /srv/pillar/infrastructure_data.sls
+``` 
 <button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 0)">Verify Output (Optional)</button>
 
+To allow the Junos proxy minions to use the data defined in the `infrastructure_data.sls` file, we need to edit the top.sls file.
 
-At this point we have to write the top.sls file which maps the Proxy Minion to the [pillar](https://docs.saltstack.com/en/latest/topics/pillar/) file that contains its corresponding details (`vqfx1.sls`)
 ```
 cat /srv/pillar/top.sls
 ```
 <button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 1)">Verify Output (Optional)</button>
 
+We also have to refresh the pillar data, so our minions can see the new pillar data.
 
-We also have to configure the /etc/salt/proxy file to point to the Salt Master
 ```
-cat /etc/salt/proxy
+salt 'vqfx1' saltutil.refresh_pillar
 ```
-<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 2)">Verify Output (Optional)</button>
+<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 2)">Run this snippet</button>
 
-The Proxy Minion is now configured and is ready to start.
-```
-salt-proxy --proxyid=vqfx1 -d
-```
-<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', this)">Run this snippet</button>
+Now let's create a configuration template - but before that, let's understand the placing of the template.
 
-( Note: it might take sometime for the key to be populated. Keep executing the below command every few seconds, until you see the "vqfx1" key listed. )
-```
-salt-key -L
-```
-<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', this)">Run this snippet</button>
+Salt has the concept of [file roots](https://docs.saltstack.com/en/latest/ref/file_server/file_roots.html) directory, which is configured as a `file_roots` parameter. This parameter is located in the '/etc/salt/master' configuration file on the Salt master, and this location is '/srv/salt' by default. Thus, in our case, we will use '/srv/salt' as the path.
 
-Let's accept the Salt Proxy Minion's public key using the command
-```
-salt-key --accept="vqfx1" -y
-```
-<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', this)">Run this snippet</button>
+The template will use Jinja syntax for the conditional loops, and the variables are accessed using `pillar.<var_name>`. We do have multiple options to create the template - Junos text configuration, XML, or Junos set commands. For now, let's go with a text configuration template.
 
-Once this is done, the Salt Master will be able to communicate with the Salt Proxy Minion
-
-Next, let's retrieve the device facts using the junos.facts execution module to verify that the device is connected to the Salt Master.
-(Note: give a few seconds for the keys to sync, before trying this command)
 ```
-salt 'vqfx1' junos.facts
-```
-<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', this)">Run this snippet</button>
+cat /srv/salt/infrastructure_config.conf
+``` 
+<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 3)">Run this snippet</button>
 
-Now that the Salt Environment is setup, let's dive deeper into the world of Salt!
+The next step is to create a salt SLS file, describing the state we want our 'vqfx1' and its configurations to be in. It will reference the [Junos state module] (https://docs.saltstack.com/en/latest/ref/states/all/salt.states.junos.html) to provision the configuration template.
+
+```
+cat /srv/salt/provision_infrastructure.sls
+```
+<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 4)">Run this snippet</button>
+
+To apply the configuration changes, we need to execute a 'state.apply' function.
+
+```
+salt 'vqfx1' state.apply provision_infrastructure
+```
+<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 5)">Run this snippet</button>
+
+Finally, let's check if the configurations were successfully loaded and committed.
+
+```
+show configuration | compare rollback 1
+```
+<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('vqfx1', 6)">Run this snippet</button>
+
+That's it for now - hopefully you enjoyed learning about Salt, and are ready to go automate!
