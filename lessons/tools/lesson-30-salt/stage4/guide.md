@@ -42,7 +42,7 @@ cat /srv/salt/infrastructure_config.conf
 ``` 
 <button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 3)">Run this snippet</button>
 
-The next step is to create a salt SLS file, describing the state we want our 'vqfx1' and its configurations to be in. It will reference the [Junos state module] (https://docs.saltstack.com/en/latest/ref/states/all/salt.states.junos.html) to provision the configuration template.
+The next step is to create a salt SLS file, describing the state we want our 'vqfx1' and its configurations to be in. It will reference the [Junos state module](https://docs.saltstack.com/en/latest/ref/states/all/salt.states.junos.html) to provision the configuration template.
 
 ```
 cat /srv/salt/provision_infrastructure.sls
