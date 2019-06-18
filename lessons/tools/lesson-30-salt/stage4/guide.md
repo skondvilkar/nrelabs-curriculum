@@ -40,16 +40,16 @@ The template will use Jinja syntax for the conditional loops, and the variables 
 ```
 cat /srv/salt/infrastructure_config.conf
 ``` 
-<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 3)">Run this snippet</button>
+<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 3)">Verify Output (Optional)</button>
 
 The next step is to create a salt SLS file, describing the state we want our 'vqfx1' and its configurations to be in. It will reference the [Junos state module] (https://docs.saltstack.com/en/latest/ref/states/all/salt.states.junos.html) to provision the configuration template.
 
 ```
 cat /srv/salt/provision_infrastructure.sls
 ```
-<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 4)">Run this snippet</button>
+<button type="button" class="btn btn-primary btn-sm" onclick="runSnippetInTab('salt1', 4)">Verify Output (Optional)</button>
 
-To apply the configuration changes, we need to execute a 'state.apply' function.
+To apply the configuration changes, we need to execute a 'state.apply' function. 
 
 ```
 salt 'vqfx1' state.apply provision_infrastructure
