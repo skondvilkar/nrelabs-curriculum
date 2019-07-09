@@ -7,6 +7,12 @@
 - Prepare curriculum for collections [#224](https://github.com/nre-learning/nrelabs-curriculum/pull/224)
 - Update all paths with new lesson directory mount point [#227](https://github.com/nre-learning/nrelabs-curriculum/pull/227)
 
+## v0.3.3 - July 9, 2019
+
+### Curriculum
+
+- Added stage 4 to the "Network Automation with Salt" Lesson-30. This stage will explain how to configure Junos devices using Salt.
+
 ## v0.3.2 - April 19, 2019
 
 - Three new lessons [#217](https://github.com/nre-learning/nrelabs-curriculum/pull/217)
